@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PetRent Italy - Case Pet Friendly</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+
+  <header class="max-w-5xl mx-auto pt-10 pb-6 px-4 text-center">
+    <h1 class="text-4xl font-extrabold text-indigo-900 tracking-tight">🐾 PetRent Italy</h1>
+    <p class="text-gray-600 mt-2 text-lg">Trova la tua prossima casa in affitto senza separarti dai tuoi animali</p>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6">
+    <div id="listings-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="col-span-full text-center py-10 text-gray-500">Caricamento annunci in corso...</div>
+    </div>
+  </main>
+
+  <script>
+    // 1. Configurazione Supabase
+    const supabaseUrl = 'https://gleqdisrwmvgfnqlebsc.supabase.co';
+    const supabaseKey = 'sb_publishable_op6dwteVSnU2MQWyeR-o_w_DPGc0GTl';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // 2. Funzione per caricare gli annunci
+    async function loadListings() {
+      const container = document.getElementById('listings-container');
+      
+      const { data, error } = await supabaseClient
+        .from('listings')
+        .select('*');
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">Nessun annuncio trovato o errore di connessione.</div>`;
+        return;
+      }
+
+      container.innerHTML = data.map(item => `
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
+          <img src="${item.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa'}" alt="${item.title}" class="h-48 w-full object-cover">
+          <div class="p-5">
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 uppercase tracking-wide">
+                🐶 ${item.pet_policy || 'PET FRIENDLY'}
+              </span>
+              <span class="text-xs text-gray-400 font-medium">${item.source_site || 'Web'}</span>
+            </div>
+            <h2 class="text-lg font-bold text-gray-900 line-clamp-2 mt-1 mb-1">${item.title}</h2>
+            <p class="text-gray-500 text-sm mb-3">${item.location || 'Italia'}</p>
+            <p class="text-2xl font-black text-indigo-600 mb-4">${item.price}</p>
+            <a href="${item.original_url}" target="_blank" rel="noopener noreferrer" 
+               class="block text-center bg-indigo-600 text-white font-semibold py-2.5 rounded-xl hover:bg-indigo-700 transition">
+              Vedi Annuncio Originale ↗
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    loadListings();
+  </script>
+</body>
+</html>
